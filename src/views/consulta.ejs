@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consulta de Produtos</title>
+    <!-- Link do CSS do Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body style="background-color: #f8f9fa; padding: 20px;">
+    <div class="container">
+      <!-- Cabeçalho -->
+      <div class="text-center mb-4">
+        <h1 class="display-5 text-primary">Produtos</h1>
+        <p class="text-muted">Veja os produtos cadastrados no sistema</p>
+      </div>
+
+      <!-- Tabela -->
+      <div class="card shadow-lg">
+        <div class="card-body">
+          <table class="table table-striped table-hover table-bordered">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>ID</th>
+                <th>Código SAP</th>
+                <th>Part Number</th>
+                <th>Projeto</th>
+                <th>Cliente</th>
+                <th>Quantidade</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody class="text-center">
+              <% products.forEach((product) => { %>
+                <tr>
+                  <td><%= product.id %></td>
+                  <td><%= product.sap_code %></td>
+                  <td><%= product.part_number %></td>
+                  <td><%= product.project %></td>
+                  <td><%= product.client %></td>
+                  <td><%= product.quantity %></td>
+                  <td>
+                    <!-- Botão Editar -->
+                    <button
+                      type="button"
+                      class="btn btn-warning btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editModal"
+                      onclick="fillModal('<%= product.id %>', '<%= product.sap_code %>', '<%= product.part_number %>', '<%= product.project %>', '<%= product.client %>', '<%= product.quantity %>')"
+                    >
+                      Editar
+                    </button>
+
+                    <!-- Botão Excluir -->
+                    <form action="/excluir" method="POST" style="display: inline;">
+                      <input type="hidden" name="id" value="<%= product.id %>" />
+                      <button
+                        type="submit"
+                        class="btn btn-danger btn-sm"
+                        onclick="return confirm('Tem certeza que deseja excluir este produto?')"
+                      >
+                        Excluir
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Link para cadastrar novo produto -->
+      <div class="text-center mt-4">
+        <a href="/new" class="btn btn-primary">Cadastrar Novo Produto</a>
+      </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Cabeçalho do Modal -->
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <!-- Corpo do Modal -->
+          <div class="modal-body">
+            <form id="editForm" action="/editar" method="POST">
+              <!-- ID oculto -->
+              <input type="hidden" id="editId" name="id" />
+              
+              <!-- Campos do formulário -->
+              <div class="mb-3">
+                <label for="editSap" class="form-label">Código SAP</label>
+                <input type="text" id="editSap" name="sap" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label for="editPartNumber" class="form-label">Número da Peça</label>
+                <input type="text" id="editPartNumber" name="partNumber" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label for="editProjeto" class="form-label">Projeto</label>
+                <input type="text" id="editProjeto" name="projeto" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label for="editCliente" class="form-label">Cliente</label>
+                <input type="text" id="editCliente" name="cliente" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label for="editQuantidade" class="form-label">Quantidade</label>
+                <input type="number" id="editQuantidade" name="quantidade" class="form-control" min="1" required />
+              </div>
+
+              <!-- Botão Salvar -->
+              <button type="submit" class="btn btn-primary w-100">Salvar Alterações</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script do Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para preencher o modal -->
+    <script>
+      function fillModal(id, sap, partNumber, projeto, cliente, quantidade) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editSap').value = sap;
+        document.getElementById('editPartNumber').value = partNumber;
+        document.getElementById('editProjeto').value = projeto;
+        document.getElementById('editCliente').value = cliente;
+        document.getElementById('editQuantidade').value = quantidade;
+      }
+    </script>
+  </body>
+</html>

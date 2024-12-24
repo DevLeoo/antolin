@@ -11,50 +11,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-const response = (type, title, message) => {
-
-  const color = type == "S" ? "green" : "red"
-  return `
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-          <title>Sucesso</title>
-          <style>
-            body {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-              font-family: Arial, sans-serif;
-            }
-            .container {
-              text-align: center;
-            }
-            h1 {
-              color: ${color};
-            }
-            p {
-              color: gray;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>${title}</h1>
-            <p>${message}</p>
-          </div>
-          <script>
-            setTimeout(() => {
-              window.location.href = "/";
-            }, 3000);
-          </script>
-        </body>
-      </html>
-    `
-}
-
-
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -90,6 +46,17 @@ db.connect((err) => {
 });
 
 app.get("/", (req, res) => {
+  const query = "SELECT * FROM products";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Erro ao buscar produtos:", err);
+      return res.send("Erro ao carregar os produtos.");
+    }
+    res.render("consulta", { products: results });
+  });
+});
+
+app.get("/new", (req, res) => {
   res.render("cadastro");
 });
 
@@ -97,7 +64,7 @@ app.post("/cadastrar", (req, res) => {
   const { partNumber, projeto, cliente, sap, quantidade } = req.body;
 
   if (!partNumber || !projeto || !cliente || !sap || quantidade <= 0) {
-    return res.send(response("E", "Erro ao registrar produto!", "Por favor, preencha todos os campos corretamente!"));
+    return res.send("Erro ao registrar produto. Preencha todos os campos corretamente.");
   }
 
   const insertQuery = `
@@ -113,7 +80,43 @@ app.post("/cadastrar", (req, res) => {
       return res.send("Erro ao cadastrar o produto. Tente novamente.");
     }
 
-    res.send(response("S", "Produto cadastrado com sucesso!", "Redirecionando para a página inicial..."));
+    res.redirect("/");
+  });
+});
+
+app.post("/editar", (req, res) => {
+  const { id, partNumber, projeto, cliente, sap, quantidade } = req.body;
+
+  const updateQuery = `
+    UPDATE products 
+    SET sap_code = ?, part_number = ?, project = ?, client = ?, quantity = ? 
+    WHERE id = ?
+  `;
+
+  const values = [sap, partNumber, projeto, cliente, quantidade, id];
+
+  db.query(updateQuery, values, (err) => {
+    if (err) {
+      console.error("Erro ao editar produto:", err);
+      return res.send("Erro ao editar o produto. Tente novamente.");
+    }
+
+    res.redirect("/");
+  });
+});
+
+app.post("/excluir", (req, res) => {
+  const { id } = req.body;
+
+  const deleteQuery = "DELETE FROM products WHERE id = ?";
+
+  db.query(deleteQuery, [id], (err) => {
+    if (err) {
+      console.error("Erro ao excluir produto:", err);
+      return res.send("Erro ao excluir o produto. Tente novamente.");
+    }
+
+    res.redirect("/");
   });
 });
 
